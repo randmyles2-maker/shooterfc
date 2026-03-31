@@ -40,18 +40,17 @@ function damagePlayer(amount) {
     if(playerHealth <= 0) { alert("GAME OVER! KILLS: " + killCount); location.reload(); }
 }
 
-// --- NEW: SETTINGS & NAVIGATION LOGIC ---
+// --- SETTINGS & NAVIGATION LOGIC ---
 document.getElementById('open-settings').onclick = () => {
     menus.main.style.display = 'none';
     menus.set.style.display = 'flex';
 };
-
 document.getElementById('back-to-menu').onclick = () => {
     menus.set.style.display = 'none';
     menus.main.style.display = 'flex';
 };
 
-// --- NEW: FPS TRACKING ---
+// --- FPS TRACKING ---
 let frames = 0;
 let prevTime = performance.now();
 function updateFPS() {
@@ -64,7 +63,7 @@ function updateFPS() {
     }
 }
 
-// --- LIGHTING & ENVIRONMENT (ORIGINAL) ---
+// --- LIGHTING & ENVIRONMENT ---
 const sun = new THREE.DirectionalLight(0xffffff, 4.0);
 sun.position.set(100, 200, 100);
 sun.castShadow = true;
@@ -100,7 +99,7 @@ function spawnBlood(pos) {
     }
 }
 
-// --- VEHICLE CLASS (ORIGINAL) ---
+// --- VEHICLE CLASS (WITH HAND JOINTS) ---
 class GolfCart {
     constructor() {
         this.group = new THREE.Group();
@@ -199,7 +198,7 @@ class GolfCart {
 }
 const cart = new GolfCart();
 
-// --- ENEMY CLASS (ORIGINAL) ---
+// --- ENEMY CLASS ---
 class Enemy {
     constructor(position) {
         this.group = new THREE.Group();
@@ -265,7 +264,7 @@ const enemies = [];
 function spawnEnemies(count) { for(let i=0; i<count; i++) enemies.push(new Enemy(new THREE.Vector3((Math.random()-0.5)*200, 0, (Math.random()-0.5)*200-100))); }
 spawnEnemies(15);
 
-// --- WEAPONS (ORIGINAL) ---
+// --- WEAPONS ---
 const viewmodel = new THREE.Group();
 const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 });
 const rifle = new THREE.Group(); rifle.add(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.8), gunMat));
@@ -359,11 +358,7 @@ function animate() {
         bullets.forEach((b, i) => { b.mesh.position.addScaledVector(b.dir, 200 * delta); if ((b.time += delta) > 2) { scene.remove(b.mesh); bullets.splice(i, 1); } });
         
         // --- SETTINGS INTEGRATION ---
-        if (blurToggle.value === "ON") {
-            renderer.autoClearColor = false;
-        } else {
-            renderer.autoClearColor = true;
-        }
+        renderer.autoClearColor = (blurToggle.value !== "ON");
 
         recoil = THREE.MathUtils.lerp(recoil, 0, 0.1);
         viewmodel.position.z = -0.8 + recoil;
