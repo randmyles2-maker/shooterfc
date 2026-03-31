@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UHD 4K Grassland Simulator</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #c3e3ff; font-family: 'Segoe UI', sans-serif; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background: white; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px white; z-index: 10; pointer-events: none; }
+        #menu-container, #settings-container, #weapon-container { position: absolute; inset: 0; background: radial-gradient(circle, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; backdrop-filter: blur(10px); }
+        #settings-container, #weapon-container { display: none; }
+        .menu-card { background: rgba(255, 255, 255, 0.05); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; }
+        h1, h2 { margin: 0 0 20px 0; letter-spacing: 5px; font-weight: 200; }
+        .btn { width: 100%; padding: 15px; margin: 10px 0; background: white; color: black; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: transform 0.2s; }
+        .btn:hover { transform: scale(1.05); }
+        #restart-btn { background: transparent; color: white; border: 1px solid white; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 14px; letter-spacing: 1px; }
+        #fps-counter { position: absolute; bottom: 10px; right: 10px; color: #0f0; font-family: monospace; font-size: 12px; z-index: 5; }
+        #kill-counter { position: absolute; top: 20px; right: 20px; color: white; font-family: monospace; font-size: 24px; font-weight: bold; text-shadow: 2px 2px #000; z-index: 5; }
+        #damage-flash { position: absolute; inset: 0; background: red; opacity: 0; transition: opacity 0.1s; pointer-events: none; z-index: 1000; }
+        #health-container { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 300px; height: 20px; background: rgba(0,0,0,0.5); border: 2px solid white; border-radius: 10px; overflow: hidden; z-index: 10; }
+        #health-bar { width: 100%; height: 100%; background: #ff3333; transition: width 0.2s; }
+        #health-text { position: absolute; width: 100%; text-align: center; color: white; font-weight: bold; font-size: 14px; line-height: 20px; text-shadow: 1px 1px 2px black; }
+    </style>
+</head>
+<body>
+    <div id="damage-flash"></div>
+    <div id="crosshair"></div>
+    <div id="fps-counter">FPS: 60</div>
+    <div id="kill-counter">KILLS: 0</div>
+    <div id="health-container">
+        <div id="health-text">HEALTH: 100%</div>
+        <div id="health-bar"></div>
+    </div>
+
+    <div id="menu-container">
+        <div class="menu-card">
+            <h1>SIMULATOR</h1>
+            <button class="btn" id="start-btn">Resume</button>
+            <button class="btn" id="open-weapons">Change Weapon</button>
+            <button class="btn" id="open-settings">Settings</button>
+            <button class="btn" onclick="location.reload()" id="restart-btn">Restart</button>
+        </div>
+    </div>
+
+    <div id="weapon-container">
+        <div class="menu-card">
+            <h2>WEAPONS</h2>
+            <button class="btn" id="select-rifle">Assault Rifle</button>
+            <button class="btn" id="select-shotgun">Double Barrel</button>
+            <button class="btn" id="select-sniper">Sniper Rifle</button>
+            <button class="btn" id="select-smg">SMG</button>
+            <button class="btn" id="select-pistol">Pistol</button>
+            <button class="btn" id="back-from-weapons">Back</button>
+        </div>
+    </div>
+
+    <div id="settings-container">
+        <div class="menu-card">
+            <h2>SETTINGS</h2>
+            <div class="setting-row"><span>MOTION BLUR</span><select id="blur-toggle"><option>OFF</option><option>ON</option></select></div>
+            <button class="btn" id="back-to-menu">Save & Back</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
+    <script type="module" src="game-engine.js"></script>
+</body>
+</html>
