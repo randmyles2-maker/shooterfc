@@ -14,6 +14,15 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
+// --- UI ELEMENTS ---
+const menus = { 
+    main: document.getElementById('menu-container'), 
+    wpn: document.getElementById('weapon-container'), 
+    set: document.getElementById('settings-container') 
+};
+const fpsEl = document.getElementById('fps-counter');
+const blurToggle = document.getElementById('blur-toggle');
+
 // --- GAME STATE ---
 let playerHealth = 100;
 let killCount = 0;
@@ -31,7 +40,31 @@ function damagePlayer(amount) {
     if(playerHealth <= 0) { alert("GAME OVER! KILLS: " + killCount); location.reload(); }
 }
 
-// --- LIGHTING & ENVIRONMENT ---
+// --- NEW: SETTINGS & NAVIGATION LOGIC ---
+document.getElementById('open-settings').onclick = () => {
+    menus.main.style.display = 'none';
+    menus.set.style.display = 'flex';
+};
+
+document.getElementById('back-to-menu').onclick = () => {
+    menus.set.style.display = 'none';
+    menus.main.style.display = 'flex';
+};
+
+// --- NEW: FPS TRACKING ---
+let frames = 0;
+let prevTime = performance.now();
+function updateFPS() {
+    frames++;
+    const time = performance.now();
+    if (time >= prevTime + 1000) {
+        fpsEl.innerText = "FPS: " + frames;
+        frames = 0;
+        prevTime = time;
+    }
+}
+
+// --- LIGHTING & ENVIRONMENT (ORIGINAL) ---
 const sun = new THREE.DirectionalLight(0xffffff, 4.0);
 sun.position.set(100, 200, 100);
 sun.castShadow = true;
@@ -67,7 +100,7 @@ function spawnBlood(pos) {
     }
 }
 
-// --- VEHICLE CLASS ---
+// --- VEHICLE CLASS (ORIGINAL) ---
 class GolfCart {
     constructor() {
         this.group = new THREE.Group();
@@ -166,7 +199,7 @@ class GolfCart {
 }
 const cart = new GolfCart();
 
-// --- ENEMY CLASS ---
+// --- ENEMY CLASS (ORIGINAL) ---
 class Enemy {
     constructor(position) {
         this.group = new THREE.Group();
@@ -232,7 +265,7 @@ const enemies = [];
 function spawnEnemies(count) { for(let i=0; i<count; i++) enemies.push(new Enemy(new THREE.Vector3((Math.random()-0.5)*200, 0, (Math.random()-0.5)*200-100))); }
 spawnEnemies(15);
 
-// --- WEAPONS ---
+// --- WEAPONS (ORIGINAL) ---
 const viewmodel = new THREE.Group();
 const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 });
 const rifle = new THREE.Group(); rifle.add(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.8), gunMat));
@@ -258,14 +291,13 @@ function fireWeapon() {
     }
 }
 
-// --- CONTROLS & UI HOOKS ---
+// --- CONTROLS HOOKS ---
 const controls = new PointerLockControls(camera, document.body);
-const menus = { main: document.getElementById('menu-container'), wpn: document.getElementById('weapon-container'), set: document.getElementById('settings-container') };
 document.getElementById('start-btn').onclick = () => controls.lock();
 document.getElementById('open-weapons').onclick = () => { menus.main.style.display='none'; menus.wpn.style.display='flex'; };
 document.getElementById('back-from-weapons').onclick = () => { menus.wpn.style.display='none'; menus.main.style.display='flex'; };
-const hideAll = () => [rifle, shotgun, sniper, smg, pistol].forEach(g => g.visible = false);
 
+const hideAll = () => [rifle, shotgun, sniper, smg, pistol].forEach(g => g.visible = false);
 document.getElementById('select-rifle').onclick = () => { hideAll(); rifle.visible=true; menus.wpn.style.display='none'; controls.lock(); };
 document.getElementById('select-shotgun').onclick = () => { hideAll(); shotgun.visible=true; menus.wpn.style.display='none'; controls.lock(); };
 document.getElementById('select-sniper').onclick = () => { hideAll(); sniper.visible=true; menus.wpn.style.display='none'; controls.lock(); };
@@ -275,7 +307,6 @@ document.getElementById('select-pistol').onclick = () => { hideAll(); pistol.vis
 controls.addEventListener('lock', () => Object.values(menus).forEach(m => m.style.display = 'none'));
 controls.addEventListener('unlock', () => menus.main.style.display = 'flex');
 
-// --- INPUT HANDLING ---
 let move = { w: false, s: false, a: false, d: false };
 let velocity = new THREE.Vector3(), recoil = 0, isDriving = false, spawnTimer = 0;
 
@@ -290,6 +321,8 @@ document.addEventListener('keyup', (e) => { if (move.hasOwnProperty(e.key.toLowe
 let lastTime = performance.now();
 function animate() {
     requestAnimationFrame(animate);
+    updateFPS();
+    
     const time = performance.now();
     const delta = Math.min((time - lastTime) / 1000, 0.1);
     lastTime = time;
@@ -309,15 +342,11 @@ function animate() {
             controls.moveRight(velocity.x * delta); controls.moveForward(-velocity.z * delta);
             camera.position.y = 3.5;
         }
-
-        // Particle updates
         for(let i=particles.length-1; i>=0; i--) {
             particles[i].mesh.position.addScaledVector(particles[i].vel, delta);
             particles[i].vel.y -= 10 * delta; particles[i].life -= delta;
             if(particles[i].life <= 0) { scene.remove(particles[i].mesh); particles.splice(i,1); }
         }
-
-        // Enemy and bullet logic
         for (let i = enemies.length - 1; i >= 0; i--) {
             const gone = enemies[i].update(delta, camera.position);
             if (gone) enemies.splice(i, 1);
@@ -328,6 +357,14 @@ function animate() {
             }
         }
         bullets.forEach((b, i) => { b.mesh.position.addScaledVector(b.dir, 200 * delta); if ((b.time += delta) > 2) { scene.remove(b.mesh); bullets.splice(i, 1); } });
+        
+        // --- SETTINGS INTEGRATION ---
+        if (blurToggle.value === "ON") {
+            renderer.autoClearColor = false;
+        } else {
+            renderer.autoClearColor = true;
+        }
+
         recoil = THREE.MathUtils.lerp(recoil, 0, 0.1);
         viewmodel.position.z = -0.8 + recoil;
     }
