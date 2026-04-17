@@ -1,4 +1,5 @@
 ShooterFC
+
 ShooterFC is a high-octane First-Person Shooter and Driving Simulator engineered with Three.js. This technical showcase pushes the boundaries of browser-based WebGL, merging expansive, optimized environments with sophisticated vehicle mechanics and visceral combat.
 
 ⚡ Technical Core & Features
